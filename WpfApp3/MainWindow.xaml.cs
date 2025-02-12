@@ -154,7 +154,7 @@ namespace WpfApp3
             try
             {
                 arraytasks[0] = Task.Factory.StartNew(ThreadFunction1);
-                arraytasks[1] = arraytasks[0].ContinueWith(ThreadFunction2);
+                arraytasks[1] = arraytasks[0].ContinueWith(ThreadFunction2); 
                 arraytasks[2] = arraytasks[1].ContinueWith(ThreadFunction3); 
 
             }

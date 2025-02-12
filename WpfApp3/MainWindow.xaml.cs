@@ -21,7 +21,8 @@ namespace WpfApp3
     {
         Task[] arraytasks = new Task[3];
         public SynchronizationContext uiContext;
-        Random random = new Random();   
+        Random random = new Random();
+        Mutex mutex = new Mutex(); 
         public MainWindow()
         {
             InitializeComponent();
@@ -31,9 +32,7 @@ namespace WpfApp3
         void ThreadFunction1() 
         { 
             int[] numbers = new int[100];
-            bool CreatedNew;    
-
-            Mutex mutex = new Mutex(false, "DB744E26-72C1-4F2A-8BF8-5C31980953C7", out CreatedNew);
+           
             mutex.WaitOne();
             for (int  i = 0; i < numbers.Length; i++) 
             {
@@ -52,8 +51,7 @@ namespace WpfApp3
             {
                 if (t.Exception == null)
                 {
-                    bool CreatedNew;
-                    Mutex mutex = new Mutex(false, "DB744E26-72C1-4F2A-8BF8-5C31980953C7", out CreatedNew);
+                  
                     mutex.WaitOne();
                     uiContext.Send(d => txtStatus2.Text = "Поток 2: Мьютекс свободен! Начинаем поиск простых чисел из первого файла.", null);
                     Thread.Sleep(1000);
@@ -81,7 +79,6 @@ namespace WpfApp3
                 }
                 else
                 {
-                    // Обработка исключений из первого потока
                     uiContext.Send(d => txtStatus2.Text = "Поток 2: Ошибка в первом потоке!", null);
                 }
             }
@@ -98,8 +95,7 @@ namespace WpfApp3
             {
                 if (t.Exception == null)
                 {
-                    bool CreatedNew;
-                    Mutex mutex = new Mutex(false, "DB744E26-72C1-4F2A-8BF8-5C31980953C7", out CreatedNew);
+                  
                     mutex.WaitOne();
                     uiContext.Send(d => txtStatus3.Text = "Поток 3: Мьютекс свободен! Начинаем поиск простых чисел с последней цифрой 7.", null);
                     Thread.Sleep(1000);
@@ -154,14 +150,19 @@ namespace WpfApp3
             try
             {
                 arraytasks[0] = Task.Factory.StartNew(ThreadFunction1);
-                arraytasks[1] = arraytasks[0].ContinueWith(ThreadFunction2); 
-                arraytasks[2] = arraytasks[1].ContinueWith(ThreadFunction3); 
+                arraytasks[1] = Task.Factory.StartNew(() => ThreadFunction2(arraytasks[0]));
+                arraytasks[2] = Task.Factory.StartNew(() => ThreadFunction3(arraytasks[1]));
 
+                Task.WhenAll(arraytasks).ContinueWith(t =>
+                {
+                    uiContext.Send(d => MessageBox.Show("Все потоки завершены!"), null); 
+                });
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
         }
+
     }
 }

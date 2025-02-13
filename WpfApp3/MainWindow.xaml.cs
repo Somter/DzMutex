@@ -41,10 +41,11 @@ namespace WpfApp3
 
             File.WriteAllLines("number.txt", numbers.Select(n => n.ToString()));
             Thread.Sleep(1000);
-            uiContext.Send(d => txtStatus1.Text = "Поток 1: Поток записал числа в файл", null);
+            uiContext.Send(d => txtStatus1.Text = "Поток 1: Поток записал числа в файл", null); 
+            ThreadFunction2();  
             mutex.ReleaseMutex();
 
-            ThreadFunction2();
+           
         }
 
         void ThreadFunction2()
@@ -72,9 +73,10 @@ namespace WpfApp3
                 Thread.Sleep(1000);
                 uiContext.Send(d => txtStatus2.Text = "Поток 2: Файл с простыми числами создан.", null);
 
+                ThreadFunction3();
                 mutex.ReleaseMutex();
 
-                ThreadFunction3();
+                
             }
             catch (Exception ex)
             {

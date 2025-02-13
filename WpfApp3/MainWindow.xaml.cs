@@ -10,7 +10,8 @@ namespace WpfApp3
         private static Semaphore semaphore = new Semaphore(3, 3, "GlobalAppSemaphore");
         public SynchronizationContext uiContext;
         private Random random = new Random();
-        private Mutex mutex = new Mutex();
+        bool CreatedNew;    
+        private Mutex mutex;
 
         public MainWindow()
         {
@@ -24,6 +25,7 @@ namespace WpfApp3
             InitializeComponent();
             uiContext = SynchronizationContext.Current;
             this.Closed += (s, e) => semaphore.Release();
+            mutex = new Mutex(false, "DB744E26-72C1-4F2A-8BF8-5C31980953C7", out CreatedNew);
         }
 
         void ThreadFunction1()
@@ -57,7 +59,7 @@ namespace WpfApp3
 
             if (!File.Exists("number.txt"))
             {
-                uiContext.Send(d => txtStatus2.Text = "Поток 2: Файл с числами не найден!", null);
+                uiContext.Send(d => txtStatus2.Text = "Поток 2: Файл с числами не найден!", null); 
                 mutex.ReleaseMutex();
                 return;
             }
